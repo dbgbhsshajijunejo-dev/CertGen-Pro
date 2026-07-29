@@ -61,16 +61,27 @@ const SETTINGS_DOC_ID = 'general_settings';
 const LOCAL_SETTINGS_KEY = 'school_cert_settings';
 const LOCAL_CERTS_KEY = 'school_cert_records';
 
+// Helper to wrap Firestore calls with a fast timeout for smooth offline fallback
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 3000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Firestore request timeout')), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+}
+
 // Load School Settings
 export async function loadSchoolSettings(): Promise<SchoolSettings> {
   try {
     const docRef = doc(db, 'settings', SETTINGS_DOC_ID);
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef), 3000);
     if (snap.exists()) {
-      return { ...DEFAULT_SETTINGS, ...snap.data() } as SchoolSettings;
+      const data = { ...DEFAULT_SETTINGS, ...snap.data() } as SchoolSettings;
+      localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(data));
+      return data;
     }
   } catch (err) {
-    console.warn('Firebase settings fetch failed or offline, loading local fallback:', err);
+    console.warn('Firebase settings fetch offline/unavailable, using local fallback');
   }
 
   // Fallback to localStorage
@@ -87,14 +98,14 @@ export async function loadSchoolSettings(): Promise<SchoolSettings> {
 
 // Save School Settings
 export async function saveSchoolSettings(settings: SchoolSettings): Promise<void> {
-  // Always update local cache
+  // Always update local cache immediately
   localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(settings));
 
   try {
     const docRef = doc(db, 'settings', SETTINGS_DOC_ID);
-    await setDoc(docRef, { ...settings, updatedAt: new Date().toISOString() });
+    await withTimeout(setDoc(docRef, { ...settings, updatedAt: new Date().toISOString() }), 3000);
   } catch (err) {
-    console.warn('Firebase settings save failed, saved locally:', err);
+    console.warn('Firebase settings save failed, saved locally');
   }
 }
 
@@ -107,7 +118,7 @@ export async function saveCertificate(cert: CertificateData): Promise<string> {
     updatedAt: new Date().toISOString(),
   };
 
-  // Local storage backup
+  // Local storage backup immediately
   const existingCerts = getLocalCertificates();
   const index = existingCerts.findIndex((c) => c.id === certId || c.certificateNo === cert.certificateNo);
   if (index >= 0) {
@@ -119,9 +130,9 @@ export async function saveCertificate(cert: CertificateData): Promise<string> {
 
   try {
     const docRef = doc(db, 'certificates', certId);
-    await setDoc(docRef, certData);
+    await withTimeout(setDoc(docRef, certData), 3000);
   } catch (err) {
-    console.warn('Firebase cert save failed, stored locally:', err);
+    console.warn('Firebase cert save failed, stored locally');
   }
 
   return certId;
@@ -132,14 +143,14 @@ export async function loadCertificates(): Promise<CertificateData[]> {
   try {
     const colRef = collection(db, 'certificates');
     const q = query(colRef, orderBy('createdAt', 'desc'), limit(500));
-    const snap = await getDocs(q);
+    const snap = await withTimeout(getDocs(q), 3500);
     if (!snap.empty) {
       const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as CertificateData));
       localStorage.setItem(LOCAL_CERTS_KEY, JSON.stringify(docs));
       return docs;
     }
   } catch (err) {
-    console.warn('Firebase load certificates failed, using local storage:', err);
+    console.warn('Firebase load certificates offline/unavailable, using local storage');
   }
 
   return getLocalCertificates();
@@ -147,15 +158,15 @@ export async function loadCertificates(): Promise<CertificateData[]> {
 
 // Delete Certificate
 export async function deleteCertificateRecord(certId: string): Promise<void> {
-  // Local delete
+  // Local delete immediately
   const existing = getLocalCertificates().filter((c) => c.id !== certId);
   localStorage.setItem(LOCAL_CERTS_KEY, JSON.stringify(existing));
 
   try {
     const docRef = doc(db, 'certificates', certId);
-    await deleteDoc(docRef);
+    await withTimeout(deleteDoc(docRef), 3000);
   } catch (err) {
-    console.warn('Firebase delete failed:', err);
+    console.warn('Firebase delete failed, deleted locally');
   }
 }
 

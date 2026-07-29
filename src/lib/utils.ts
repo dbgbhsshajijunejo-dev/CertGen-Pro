@@ -227,18 +227,31 @@ export async function downloadCertificatePDF(elementId: string, filename: string
 
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const imgAspect = canvas.height / canvas.width;
+    
     let renderWidth = pdfWidth;
-    let renderHeight = pdfWidth * imgAspect;
+    let renderHeight = pdfHeight;
+    let xOffset = 0;
+    let yOffset = 0;
 
-    // Strict single page fitting without overflow
-    if (renderHeight > pdfHeight) {
-      renderHeight = pdfHeight;
-      renderWidth = pdfHeight / imgAspect;
+    if (canvas && canvas.width > 0 && canvas.height > 0) {
+      const imgAspect = canvas.height / canvas.width;
+      if (Number.isFinite(imgAspect) && imgAspect > 0) {
+        renderWidth = pdfWidth;
+        renderHeight = pdfWidth * imgAspect;
+        if (renderHeight > pdfHeight) {
+          renderHeight = pdfHeight;
+          renderWidth = pdfHeight / imgAspect;
+        }
+        xOffset = (pdfWidth - renderWidth) / 2;
+        yOffset = (pdfHeight - renderHeight) / 2;
+      }
     }
 
-    const xOffset = (pdfWidth - renderWidth) / 2;
-    const yOffset = (pdfHeight - renderHeight) / 2;
+    // Safety checks for jsPDF coordinates
+    if (!Number.isFinite(xOffset)) xOffset = 0;
+    if (!Number.isFinite(yOffset)) yOffset = 0;
+    if (!Number.isFinite(renderWidth) || renderWidth <= 0) renderWidth = pdfWidth;
+    if (!Number.isFinite(renderHeight) || renderHeight <= 0) renderHeight = pdfHeight;
 
     pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'FAST');
     pdf.save(filename || 'Government_School_Leaving_Certificate.pdf');

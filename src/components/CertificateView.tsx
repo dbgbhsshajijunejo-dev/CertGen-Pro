@@ -21,38 +21,44 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
       id="certificate-print-area"
       className={`relative mx-auto bg-[#fafcff] text-slate-900 font-serif print:m-0 print:p-0 select-none overflow-hidden ${
         previewMode
-          ? 'w-[210mm] h-[297mm] max-h-[297mm] p-[8mm] sm:p-[10mm] shadow-2xl rounded-sm border border-slate-300'
-          : 'w-[210mm] h-[297mm] max-h-[297mm] p-[8mm] sm:p-[10mm]'
+          ? 'w-[210mm] h-[297mm] max-h-[297mm] shadow-2xl rounded-sm border border-slate-300'
+          : 'w-[210mm] h-[297mm] max-h-[297mm]'
       }`}
       style={{
+        width: '210mm',
+        height: '297mm',
+        maxHeight: '297mm',
+        position: 'relative',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
-      {/* Outer Decorative Double Border */}
+      {/* Outer Decorative Double Border Box - Fixed inset 10mm inside single A4 page */}
       <div
-        className="relative w-full h-full p-4 flex flex-col justify-between overflow-hidden"
+        className="absolute inset-[8mm] sm:inset-[10mm] flex flex-col justify-between overflow-hidden"
         style={{
           border: `4px double ${borderColor}`,
           outline: `2px solid ${borderColor}`,
-          outlineOffset: '-8px',
+          outlineOffset: '-7px',
           backgroundColor: '#f8faff',
+          boxSizing: 'border-box',
         }}
       >
         {/* Corner Motifs */}
         <div
-          className="absolute top-1 left-1 w-6 h-6 border-t-2 border-l-2"
+          className="absolute top-1 left-1 w-6 h-6 border-t-2 border-l-2 pointer-events-none z-10"
           style={{ borderColor: borderColor }}
         />
         <div
-          className="absolute top-1 right-1 w-6 h-6 border-t-2 border-r-2"
+          className="absolute top-1 right-1 w-6 h-6 border-t-2 border-r-2 pointer-events-none z-10"
           style={{ borderColor: borderColor }}
         />
         <div
-          className="absolute bottom-1 left-1 w-6 h-6 border-b-2 border-l-2"
+          className="absolute bottom-1 left-1 w-6 h-6 border-b-2 border-l-2 pointer-events-none z-10"
           style={{ borderColor: borderColor }}
         />
         <div
-          className="absolute bottom-1 right-1 w-6 h-6 border-b-2 border-r-2"
+          className="absolute bottom-1 right-1 w-6 h-6 border-b-2 border-r-2 pointer-events-none z-10"
           style={{ borderColor: borderColor }}
         />
 
@@ -65,14 +71,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             <img
               src={settings.watermarkLogoUrl}
               alt="Watermark"
-              className="w-[420px] h-[420px] object-contain filter grayscale"
+              className="w-[380px] h-[380px] object-contain filter grayscale"
               referrerPolicy="no-referrer"
             />
           </div>
         )}
 
         {/* CONTENT WRAPPER */}
-        <div className="relative z-10 flex flex-col h-full justify-between">
+        <div className="relative z-10 flex flex-col h-full justify-between p-3.5 sm:p-4 overflow-hidden">
           {/* HEADER SECTION */}
           <div>
             <div className="grid grid-cols-12 items-center pb-3 border-b-2" style={{ borderColor: borderColor }}>
