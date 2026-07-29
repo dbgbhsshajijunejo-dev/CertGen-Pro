@@ -77,12 +77,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
           <div>
             <div className="grid grid-cols-12 items-center pb-3 border-b-2" style={{ borderColor: borderColor }}>
               {/* LEFT: Govt Logo */}
-              <div className="col-span-2 flex justify-start items-center">
+              <div className="col-span-2 flex justify-center items-center h-full p-1">
                 {settings.govtLogoUrl ? (
                   <img
                     src={settings.govtLogoUrl}
                     alt="Govt Logo"
-                    className="h-20 w-20 object-contain drop-shadow-sm"
+                    className="max-h-24 max-w-24 w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-xs"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -93,7 +93,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </div>
 
               {/* CENTER: School Name & Address */}
-              <div className="col-span-8 text-center px-2">
+              <div className="col-span-8 text-center px-2 flex flex-col justify-center items-center">
                 <h1
                   className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wide leading-tight"
                   style={{ color: borderColor }}
@@ -113,12 +113,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </div>
 
               {/* RIGHT: School Logo */}
-              <div className="col-span-2 flex justify-end items-center">
+              <div className="col-span-2 flex justify-center items-center h-full p-1">
                 {settings.schoolLogoUrl ? (
                   <img
                     src={settings.schoolLogoUrl}
                     alt="School Logo"
-                    className="h-20 w-20 object-contain drop-shadow-sm"
+                    className="max-h-24 max-w-24 w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-xs"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -352,21 +352,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             </div>
           </div>
 
-          {/* CERTIFICATION FOOTER STATEMENT & QR CODE */}
-          <div className="my-3 pt-2 border-t border-slate-300">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs italic font-semibold text-slate-800 leading-normal flex-1">
-                "{settings.footerText || 'It is certified that above information is in accordance with the School General Register.'}"
-              </p>
-
-              {/* Optional Verification QR Code */}
-              {cert.qrCodeUrl && (
-                <div className="flex flex-col items-center justify-center shrink-0 border p-1 bg-white rounded shadow-2xs">
-                  <img src={cert.qrCodeUrl} alt="Verification QR Code" className="w-14 h-14" />
-                  <span className="text-[9px] font-mono font-bold text-slate-600 mt-0.5">SCAN TO VERIFY</span>
-                </div>
-              )}
-            </div>
+          {/* CERTIFICATION FOOTER STATEMENT */}
+          <div className="my-3 pt-2 border-t border-slate-300 text-center">
+            <p className="text-xs italic font-semibold text-slate-800 leading-normal">
+              "{settings.footerText || 'It is certified that above information is in accordance with the School General Register.'}"
+            </p>
           </div>
 
           {/* SIGNATURE SECTION */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CertificateData, SchoolSettings } from '../types';
 import { CertificateView } from './CertificateView';
-import { Printer, Download, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Printer, Download, X, ZoomIn, ZoomOut, RotateCcw, Loader2 } from 'lucide-react';
 
 interface PreviewModalProps {
   cert: CertificateData | null;
@@ -9,7 +9,7 @@ interface PreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPrint: () => void;
-  onDownloadPDF: () => void;
+  onDownloadPDF: () => Promise<void> | void;
 }
 
 export const PreviewModal: React.FC<PreviewModalProps> = ({
@@ -21,12 +21,23 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
   onDownloadPDF,
 }) => {
   const [zoomScale, setZoomScale] = useState<number>(0.85);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   if (!isOpen || !cert) return null;
 
   const handleZoomIn = () => setZoomScale((prev) => Math.min(1.3, Number((prev + 0.1).toFixed(2))));
   const handleZoomOut = () => setZoomScale((prev) => Math.max(0.5, Number((prev - 0.1).toFixed(2))));
   const handleResetZoom = () => setZoomScale(0.85);
+
+  const handlePDFClick = async () => {
+    if (isGeneratingPDF) return;
+    setIsGeneratingPDF(true);
+    try {
+      await onDownloadPDF();
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/85 backdrop-blur-xs flex flex-col items-center justify-start p-4 print:p-0 print:bg-white print:static print:block">
@@ -90,10 +101,21 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             <Printer className="w-3.5 h-3.5" /> Print (A4)
           </button>
           <button
-            onClick={onDownloadPDF}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition"
+            onClick={handlePDFClick}
+            disabled={isGeneratingPDF}
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-75 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
-            <Download className="w-3.5 h-3.5" /> PDF
+            {isGeneratingPDF ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Generating PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>Download PDF</span>
+              </>
+            )}
           </button>
           <button
             onClick={onClose}

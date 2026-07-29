@@ -126,11 +126,8 @@ function sanitizeDocumentColors(clonedDoc: Document): void {
     }
     
     // Replace oklch/oklab/color-mix color expressions with browser-computed rgb/rgba values
-    let sanitized = cssText;
     const regex = /(oklch|oklab|color-mix)\([^)]+\)/gi;
-    
-    // Perform replacement
-    sanitized = sanitized.replace(regex, (match) => {
+    return cssText.replace(regex, (match) => {
       try {
         const dummy = document.createElement('div');
         dummy.style.color = match;
@@ -141,28 +138,30 @@ function sanitizeDocumentColors(clonedDoc: Document): void {
           return computed;
         }
       } catch (err) {
-        // Fallback silently if computation fails
+        // Fallback silently
       }
-      return 'rgb(0, 0, 0)';
+      return '#1e3a8a';
     });
-
-    return sanitized;
   };
 
-  // 1. Sanitize all <style> tag content
-  const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
-  for (const style of styleTags) {
-    if (style.textContent && (style.textContent.includes('oklch') || style.textContent.includes('oklab') || style.textContent.includes('color-mix'))) {
-      style.textContent = convertColorString(style.textContent);
+  try {
+    // 1. Sanitize all <style> tag content
+    const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
+    for (const style of styleTags) {
+      if (style.textContent && (style.textContent.includes('oklch') || style.textContent.includes('oklab') || style.textContent.includes('color-mix'))) {
+        style.textContent = convertColorString(style.textContent);
+      }
     }
-  }
 
-  // 2. Sanitize all inline styles
-  const allElements = Array.from(clonedDoc.querySelectorAll<HTMLElement>('*'));
-  for (const el of allElements) {
-    if (el.style && el.style.cssText && (el.style.cssText.includes('oklch') || el.style.cssText.includes('oklab') || el.style.cssText.includes('color-mix'))) {
-      el.style.cssText = convertColorString(el.style.cssText);
+    // 2. Sanitize all inline styles
+    const allElements = Array.from(clonedDoc.querySelectorAll<HTMLElement>('*'));
+    for (const el of allElements) {
+      if (el.style && el.style.cssText && (el.style.cssText.includes('oklch') || el.style.cssText.includes('oklab') || el.style.cssText.includes('color-mix'))) {
+        el.style.cssText = convertColorString(el.style.cssText);
+      }
     }
+  } catch (err) {
+    console.warn('Error sanitizing colors:', err);
   }
 }
 
@@ -175,16 +174,40 @@ export async function downloadCertificatePDF(elementId: string, filename: string
   }
 
   try {
-    // High DPI scaling (canvas 3x for crisp text)
+    // Wait for all images in the certificate view to complete loading
+    const images = Array.from(element.querySelectorAll('img'));
+    await Promise.all(
+      images.map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete && img.naturalWidth !== 0) {
+              resolve(true);
+            } else {
+              img.onload = () => resolve(true);
+              img.onerror = () => resolve(true);
+            }
+          })
+      )
+    );
+
+    // High DPI scaling (canvas 2.5x for crisp text without browser memory crash)
     const canvas = await html2canvas(element, {
-      scale: 3,
+      scale: 2.5,
       useCORS: true,
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
       onclone: (clonedDoc) => {
+        // Remove scale/zoom transform on cloned element and parent wrappers
+        const clonedEl = clonedDoc.getElementById(elementId);
+        if (clonedEl) {
+          clonedEl.style.transform = 'none';
+          let parent = clonedEl.parentElement;
+          while (parent && parent !== clonedDoc.body) {
+            parent.style.transform = 'none';
+            parent = parent.parentElement;
+          }
+        }
         sanitizeDocumentColors(clonedDoc);
       },
     });
@@ -203,6 +226,7 @@ export async function downloadCertificatePDF(elementId: string, filename: string
     pdf.save(filename || 'Government_School_Leaving_Certificate.pdf');
   } catch (err) {
     console.error('PDF export error:', err);
-    alert('An error occurred while generating the PDF. Please try printing to PDF using Ctrl+P / Cmd+P.');
+    // Graceful fallback to browser print dialog
+    window.print();
   }
 }
