@@ -15,6 +15,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { SettingsPanel } from './components/SettingsPanel';
 import { PreviewModal } from './components/PreviewModal';
 import { CertificateView } from './components/CertificateView';
+import { LoginForm } from './components/LoginForm';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -22,6 +23,26 @@ export default function App() {
   const [settings, setSettings] = useState<SchoolSettings>(DEFAULT_SETTINGS);
   const [certificates, setCertificates] = useState<CertificateData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('cert_admin_session') === 'true';
+  });
+  const [currentUser, setCurrentUser] = useState<string>(() => {
+    return localStorage.getItem('cert_admin_username_logged') || 'hajijunejo';
+  });
+
+  const handleLoginSuccess = (user: string) => {
+    localStorage.setItem('cert_admin_session', 'true');
+    localStorage.setItem('cert_admin_username_logged', user);
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('cert_admin_session');
+    setIsAuthenticated(false);
+  };
 
   // Active Certificate for Edit or Preview
   const [editingCert, setEditingCert] = useState<CertificateData | null>(null);
@@ -138,6 +159,15 @@ export default function App() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <LoginForm
+        settings={settings}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Navbar Header */}
@@ -151,6 +181,8 @@ export default function App() {
         }}
         schoolName={settings.schoolName}
         totalCertificates={certificates.length}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Container */}

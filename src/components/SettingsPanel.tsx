@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { SchoolSettings } from '../types';
-import { Save, Building2, Palette, FileText, Upload, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Save, Building2, Palette, FileText, Upload, RefreshCw, CheckCircle2, Users, UserPlus, Trash2, ShieldCheck, KeyRound, User } from 'lucide-react';
+
+interface UserAccount {
+  id: string;
+  username: string;
+  password?: string;
+  role: 'Admin' | 'Operator';
+  createdAt: string;
+}
 
 interface SettingsPanelProps {
   settings: SchoolSettings;
@@ -11,6 +19,81 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSaveSe
   const [formData, setFormData] = useState<SchoolSettings>(settings);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // User accounts state
+  const [userList, setUserList] = useState<UserAccount[]>(() => {
+    try {
+      const saved = localStorage.getItem('cert_app_users');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (err) {}
+    return [
+      { id: 'admin-1', username: '@gbhsshajijunejo', password: 'ADMIN', role: 'Admin', createdAt: new Date().toLocaleDateString() }
+    ];
+  });
+
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<'Admin' | 'Operator'>('Operator');
+  const [userMsg, setUserMsg] = useState('');
+
+  const saveUsersToStorage = (users: UserAccount[]) => {
+    setUserList(users);
+    localStorage.setItem('cert_app_users', JSON.stringify(users));
+  };
+
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserMsg('');
+
+    const u = newUsername.trim();
+    const p = newPassword.trim();
+
+    if (!u || !p) {
+      alert('Please provide both username and password for the new user.');
+      return;
+    }
+
+    const formattedUsername = u.startsWith('@') ? u : `@${u}`;
+
+    if (userList.some((user) => user.username.toLowerCase() === formattedUsername.toLowerCase())) {
+      alert(`User with username "${formattedUsername}" already exists!`);
+      return;
+    }
+
+    const newUser: UserAccount = {
+      id: `user-${Date.now()}`,
+      username: formattedUsername,
+      password: p,
+      role: newRole,
+      createdAt: new Date().toLocaleDateString(),
+    };
+
+    const updated = [...userList, newUser];
+    saveUsersToStorage(updated);
+
+    setNewUsername('');
+    setNewPassword('');
+    setNewRole('Operator');
+    setUserMsg(`User "${formattedUsername}" created successfully.`);
+    setTimeout(() => setUserMsg(''), 4000);
+  };
+
+  const handleDeleteUser = (id: string, username: string) => {
+    if (username.toLowerCase() === '@gbhsshajijunejo' || username.toLowerCase() === 'gbhsshajijunejo') {
+      alert('Primary System Administrator (@gbhsshajijunejo) cannot be deleted!');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete user account "${username}"?`)) {
+      const updated = userList.filter((u) => u.id !== id);
+      saveUsersToStorage(updated);
+      setUserMsg(`User account "${username}" deleted.`);
+      setTimeout(() => setUserMsg(''), 4000);
+    }
+  };
 
   const handleLogoUpload = (
     field: 'govtLogoUrl' | 'schoolLogoUrl' | 'watermarkLogoUrl',
@@ -341,6 +424,148 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSaveSe
                   className="w-32 px-3 py-2 border border-slate-300 rounded text-xs font-mono"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 5: Admin & User Access Management */}
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-200 mb-4 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-600" /> 5. Admin & User Account Management
+            </span>
+            <span className="text-xs font-normal normal-case text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+              Admin Access Enabled
+            </span>
+          </h3>
+
+          {userMsg && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>{userMsg}</span>
+            </div>
+          )}
+
+          {/* Form to Create New User */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5">
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <UserPlus className="w-4 h-4 text-blue-600" /> Create New User Account
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Username *
+                </label>
+                <input
+                  type="text"
+                  placeholder="@username"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Password *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Set Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  User Role
+                </label>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value as 'Admin' | 'Operator')}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="Operator">Operator (Certificate Entry)</option>
+                  <option value="Admin">Admin (Full Control)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={handleCreateUser}
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-2xs transition"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Create User</span>
+              </button>
+            </div>
+          </div>
+
+          {/* List of Registered Accounts */}
+          <div>
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" /> Authorized System Users ({userList.length})
+            </h4>
+
+            <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-200 bg-white">
+              {userList.map((user) => {
+                const isPrimaryAdmin =
+                  user.username.toLowerCase() === '@gbhsshajijunejo' ||
+                  user.username.toLowerCase() === 'gbhsshajijunejo';
+
+                return (
+                  <div
+                    key={user.id}
+                    className="p-3 flex items-center justify-between hover:bg-slate-50 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold font-mono text-slate-900">
+                            {user.username}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded ${
+                              user.role === 'Admin'
+                                ? 'bg-purple-100 text-purple-700 border border-purple-300'
+                                : 'bg-slate-100 text-slate-600 border border-slate-300'
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                          {isPrimaryAdmin && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 rounded">
+                              Primary System Admin
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 font-mono">
+                          Password: <span className="text-slate-700 font-semibold">{user.password || '••••••••'}</span> &bull; Added: {user.createdAt}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!isPrimaryAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUser(user.id, user.username)}
+                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 rounded transition"
+                        title="Delete User Account"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

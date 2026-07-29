@@ -118,6 +118,54 @@ export function generateAutoCertNumber(existingCerts: CertificateData[] = []): s
   return `${prefix}${nextSeq}`;
 }
 
+// Helper to sanitize oklch/oklab/color-mix CSS functions for html2canvas compatibility
+function sanitizeDocumentColors(clonedDoc: Document): void {
+  const convertColorString = (cssText: string): string => {
+    if (!cssText || (!cssText.includes('oklch') && !cssText.includes('oklab') && !cssText.includes('color-mix'))) {
+      return cssText;
+    }
+    
+    // Replace oklch/oklab/color-mix color expressions with browser-computed rgb/rgba values
+    let sanitized = cssText;
+    const regex = /(oklch|oklab|color-mix)\([^)]+\)/gi;
+    
+    // Perform replacement
+    sanitized = sanitized.replace(regex, (match) => {
+      try {
+        const dummy = document.createElement('div');
+        dummy.style.color = match;
+        document.body.appendChild(dummy);
+        const computed = window.getComputedStyle(dummy).color;
+        document.body.removeChild(dummy);
+        if (computed && (computed.startsWith('rgb') || computed.startsWith('#'))) {
+          return computed;
+        }
+      } catch (err) {
+        // Fallback silently if computation fails
+      }
+      return 'rgb(0, 0, 0)';
+    });
+
+    return sanitized;
+  };
+
+  // 1. Sanitize all <style> tag content
+  const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
+  for (const style of styleTags) {
+    if (style.textContent && (style.textContent.includes('oklch') || style.textContent.includes('oklab') || style.textContent.includes('color-mix'))) {
+      style.textContent = convertColorString(style.textContent);
+    }
+  }
+
+  // 2. Sanitize all inline styles
+  const allElements = Array.from(clonedDoc.querySelectorAll<HTMLElement>('*'));
+  for (const el of allElements) {
+    if (el.style && el.style.cssText && (el.style.cssText.includes('oklch') || el.style.cssText.includes('oklab') || el.style.cssText.includes('color-mix'))) {
+      el.style.cssText = convertColorString(el.style.cssText);
+    }
+  }
+}
+
 // Download PDF export matching exact A4 dimensions
 export async function downloadCertificatePDF(elementId: string, filename: string): Promise<void> {
   const element = document.getElementById(elementId);
@@ -136,6 +184,9 @@ export async function downloadCertificatePDF(elementId: string, filename: string
       backgroundColor: '#ffffff',
       windowWidth: element.scrollWidth,
       windowHeight: element.scrollHeight,
+      onclone: (clonedDoc) => {
+        sanitizeDocumentColors(clonedDoc);
+      },
     });
 
     const imgData = canvas.toDataURL('image/jpeg', 0.98);
