@@ -202,6 +202,9 @@ export async function downloadCertificatePDF(elementId: string, filename: string
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
           clonedEl.style.transform = 'none';
+          clonedEl.style.height = '297mm';
+          clonedEl.style.maxHeight = '297mm';
+          clonedEl.style.overflow = 'hidden';
           let parent = clonedEl.parentElement;
           while (parent && parent !== clonedDoc.body) {
             parent.style.transform = 'none';
@@ -222,7 +225,22 @@ export async function downloadCertificatePDF(elementId: string, filename: string
       compress: true,
     });
 
-    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imgAspect = canvas.height / canvas.width;
+    let renderWidth = pdfWidth;
+    let renderHeight = pdfWidth * imgAspect;
+
+    // Strict single page fitting without overflow
+    if (renderHeight > pdfHeight) {
+      renderHeight = pdfHeight;
+      renderWidth = pdfHeight / imgAspect;
+    }
+
+    const xOffset = (pdfWidth - renderWidth) / 2;
+    const yOffset = (pdfHeight - renderHeight) / 2;
+
+    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'FAST');
     pdf.save(filename || 'Government_School_Leaving_Certificate.pdf');
   } catch (err) {
     console.error('PDF export error:', err);

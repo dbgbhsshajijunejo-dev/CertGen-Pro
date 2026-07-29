@@ -19,10 +19,10 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   return (
     <div
       id="certificate-print-area"
-      className={`relative mx-auto bg-[#fafcff] text-slate-900 font-serif print:m-0 print:p-0 select-none ${
+      className={`relative mx-auto bg-[#fafcff] text-slate-900 font-serif print:m-0 print:p-0 select-none overflow-hidden ${
         previewMode
-          ? 'w-[210mm] min-h-[297mm] p-[10mm] shadow-2xl rounded-sm border border-slate-300'
-          : 'w-[210mm] h-[297mm] p-[10mm]'
+          ? 'w-[210mm] h-[297mm] max-h-[297mm] p-[8mm] sm:p-[10mm] shadow-2xl rounded-sm border border-slate-300'
+          : 'w-[210mm] h-[297mm] max-h-[297mm] p-[8mm] sm:p-[10mm]'
       }`}
       style={{
         boxSizing: 'border-box',
@@ -30,7 +30,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
     >
       {/* Outer Decorative Double Border */}
       <div
-        className="relative w-full h-full p-4 flex flex-col justify-between"
+        className="relative w-full h-full p-4 flex flex-col justify-between overflow-hidden"
         style={{
           border: `4px double ${borderColor}`,
           outline: `2px solid ${borderColor}`,
@@ -94,21 +94,42 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* CENTER: School Name & Address */}
               <div className="col-span-8 text-center px-2 flex flex-col justify-center items-center">
-                <h1
-                  className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wide leading-tight"
-                  style={{ color: borderColor }}
-                >
-                  {settings.schoolName || 'GOVERNMENT HIGH SCHOOL'}
-                </h1>
-                <p className={`font-medium text-slate-700 mt-1 ${
-                  settings.addressFontSize === 'small' ? 'text-[11px]' : settings.addressFontSize === 'large' ? 'text-sm' : 'text-xs'
+                {(() => {
+                  const rawName = settings.schoolName || 'GBHSS HAJI JUNEJO (CAMPUS), DISTRICT BADIN';
+                  if (rawName.includes(',')) {
+                    const parts = rawName.split(',');
+                    return (
+                      <h1
+                        className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-tight text-center"
+                        style={{ color: borderColor }}
+                      >
+                        <span className="block">{parts[0].trim()}</span>
+                        <span className="block text-base sm:text-lg font-bold text-slate-800 mt-0.5 tracking-wide">
+                          {parts.slice(1).join(',').trim()}
+                        </span>
+                      </h1>
+                    );
+                  }
+                  return (
+                    <h1
+                      className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-tight text-center max-w-[440px] mx-auto"
+                      style={{ color: borderColor }}
+                    >
+                      {rawName}
+                    </h1>
+                  );
+                })()}
+
+                <p className={`font-semibold text-slate-800 mt-1.5 ${
+                  settings.addressFontSize === 'small' ? 'text-xs' : settings.addressFontSize === 'large' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
                 }`}>
                   {settings.schoolAddress} {settings.district ? `• ${settings.district}` : ''}
                 </p>
-                <div className={`flex justify-center items-center gap-2 font-semibold text-slate-800 mt-1 ${
-                  settings.semisFontSize === 'small' ? 'text-[10px]' : settings.semisFontSize === 'large' ? 'text-sm' : 'text-xs'
+
+                <div className={`flex justify-center items-center gap-2 font-bold text-slate-900 mt-1.5 ${
+                  settings.semisFontSize === 'small' ? 'text-xs' : settings.semisFontSize === 'large' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
                 }`}>
-                  <span>School SEMIS Code: <strong className="font-mono text-blue-950 font-bold">{settings.semisCode || 'N/A'}</strong></span>
+                  <span>School SEMIS Code: <strong className="font-mono text-blue-950 font-black text-base sm:text-lg tracking-wider ml-1">{settings.semisCode || 'N/A'}</strong></span>
                 </div>
               </div>
 

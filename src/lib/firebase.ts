@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: SchoolSettings = {
   govtLogoUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=200&q=80', // Seal icon or emblem
   schoolLogoUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=200&q=80',
   watermarkLogoUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=400&q=80',
-  schoolName: 'GOVERNMENT BOYS HIGH SCHOOL',
+  schoolName: 'GBHSS HAJI JUNEJO (CAMPUS), DISTRICT BADIN',
   schoolAddress: 'Main Station Road, City Center',
   district: 'District Central, Hyderabad',
   schoolCode: 'SCH-84920',
