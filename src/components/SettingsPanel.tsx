@@ -220,6 +220,37 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSaveSe
                 />
               </div>
             </div>
+
+            {/* Font Size Adjusters */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Address Font Size
+              </label>
+              <select
+                value={formData.addressFontSize || 'medium'}
+                onChange={(e) => setFormData({ ...formData, addressFontSize: e.target.value as 'small' | 'medium' | 'large' })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-xs text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="small">Small (Compact)</option>
+                <option value="medium">Medium (Standard)</option>
+                <option value="large">Large (Prominent)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                SEMIS Code Font Size
+              </label>
+              <select
+                value={formData.semisFontSize || 'medium'}
+                onChange={(e) => setFormData({ ...formData, semisFontSize: e.target.value as 'small' | 'medium' | 'large' })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-xs text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
           </div>
         </div>
 

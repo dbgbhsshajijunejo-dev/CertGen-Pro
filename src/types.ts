@@ -19,6 +19,9 @@ export interface SchoolSettings {
   borderColor: string;
   themeColor: string;
   watermarkOpacity: number; // e.g. 0.06
+  addressFontSize?: 'small' | 'medium' | 'large';
+  semisFontSize?: 'small' | 'medium' | 'large';
+  certScale?: number;
   updatedAt?: string;
 }
 

@@ -94,22 +94,21 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* CENTER: School Name & Address */}
               <div className="col-span-8 text-center px-2">
-                <p className="text-xs uppercase tracking-widest font-bold text-slate-600 mb-0.5">
-                  Government of Sindh / Education Department
-                </p>
                 <h1
                   className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wide leading-tight"
                   style={{ color: borderColor }}
                 >
                   {settings.schoolName || 'GOVERNMENT HIGH SCHOOL'}
                 </h1>
-                <p className="text-xs font-medium text-slate-700 mt-1">
+                <p className={`font-medium text-slate-700 mt-1 ${
+                  settings.addressFontSize === 'small' ? 'text-[11px]' : settings.addressFontSize === 'large' ? 'text-sm' : 'text-xs'
+                }`}>
                   {settings.schoolAddress} {settings.district ? `• ${settings.district}` : ''}
                 </p>
-                <div className="flex justify-center items-center gap-4 text-[11px] font-semibold text-slate-800 mt-1">
-                  <span>School Code: <strong className="font-mono text-blue-950">{settings.schoolCode}</strong></span>
-                  <span>|</span>
-                  <span>SEMIS Code: <strong className="font-mono text-blue-950">{settings.semisCode}</strong></span>
+                <div className={`flex justify-center items-center gap-2 font-semibold text-slate-800 mt-1 ${
+                  settings.semisFontSize === 'small' ? 'text-[10px]' : settings.semisFontSize === 'large' ? 'text-sm' : 'text-xs'
+                }`}>
+                  <span>School SEMIS Code: <strong className="font-mono text-blue-950 font-bold">{settings.semisCode || 'N/A'}</strong></span>
                 </div>
               </div>
 
@@ -212,8 +211,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               )}
             </div>
 
-            {/* Row: Gender, Religion, Caste, Nationality */}
-            <div className="grid grid-cols-4 gap-2 py-1">
+            {/* Row: Gender, Religion, Caste */}
+            <div className="grid grid-cols-3 gap-3 py-1">
               <div className="flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-1">4. Gender:</span>
                 <span className="flex-1 border-b border-dotted border-slate-700 text-center font-semibold text-slate-900">
@@ -232,18 +231,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {cert.caste || '---'}
                 </span>
               </div>
-              <div className="flex items-baseline">
-                <span className="font-bold text-slate-800 whitespace-nowrap mr-1">7. Nationality:</span>
-                <span className="flex-1 border-b border-dotted border-slate-700 text-center font-semibold text-slate-900">
-                  {cert.nationality || 'Pakistani'}
-                </span>
-              </div>
             </div>
 
             {/* Place of Birth */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                8. Place of Birth:
+                7. Place of Birth:
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900">
                 {cert.placeOfBirth || '---'}
@@ -253,7 +246,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Date of Birth (Figures) */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                9. Date of Birth (Figures):
+                8. Date of Birth (Figures):
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-mono font-bold text-blue-950">
                 {formatDate(cert.dateOfBirth)}
@@ -263,7 +256,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Date of Birth (Words) */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                10. Date of Birth (Words):
+                9. Date of Birth (Words):
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900 capitalize italic">
                 {cert.dateOfBirthWords || '---'}
@@ -273,7 +266,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Last School Attended */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                11. Last School Attended:
+                10. Last School Attended:
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900">
                 {cert.lastSchoolAttended || 'N/A'}
@@ -284,7 +277,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             <div className="grid grid-cols-2 gap-4 py-1">
               <div className="flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-2">
-                  12. Date of Admission:
+                  11. Date of Admission:
                 </span>
                 <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-mono font-semibold text-slate-900">
                   {formatDate(cert.admissionDate)}
@@ -292,7 +285,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </div>
               <div className="flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-2">
-                  13. Class Admitted:
+                  12. Class Admitted:
                 </span>
                 <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900">
                   {cert.classAdmitted || '---'}
@@ -304,7 +297,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             <div className="grid grid-cols-12 gap-2 py-1">
               <div className="col-span-5 flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-1">
-                  14. Class Studying:
+                  13. Class Studying:
                 </span>
                 <div className="flex-1 border-b border-dotted border-slate-700 px-1 font-bold text-blue-950">
                   {cert.classStudying || '---'}
@@ -312,7 +305,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </div>
               <div className="col-span-3 flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-1">
-                  15. Progress:
+                  14. Progress:
                 </span>
                 <div className="flex-1 border-b border-dotted border-slate-700 px-1 font-semibold text-slate-900">
                   {cert.progress || 'Satisfactory'}
@@ -320,7 +313,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </div>
               <div className="col-span-4 flex items-baseline">
                 <span className="font-bold text-slate-800 whitespace-nowrap mr-1">
-                  16. Conduct:
+                  15. Conduct:
                 </span>
                 <div className="flex-1 border-b border-dotted border-slate-700 px-1 font-semibold text-slate-900">
                   {cert.conduct || 'Good'}
@@ -331,7 +324,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Date of Leaving */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                17. Date of Leaving School:
+                16. Date of Leaving School:
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-mono font-bold text-blue-950">
                 {formatDate(cert.dateOfLeaving)}
@@ -341,7 +334,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Reason of Leaving */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                18. Reason of Leaving:
+                17. Reason of Leaving:
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900">
                 {cert.reasonOfLeaving || 'Parents Choice / Higher Education'}
@@ -351,7 +344,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             {/* Remarks */}
             <div className="flex items-baseline py-1">
               <span className="font-bold text-slate-800 whitespace-nowrap min-w-[180px]">
-                19. Remarks:
+                18. Remarks:
               </span>
               <div className="flex-1 border-b border-dotted border-slate-700 px-2 font-semibold text-slate-900">
                 {cert.remarks || 'Passed All School Examinations successfully.'}
@@ -383,8 +376,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               <div className="w-32 h-10 border-b border-slate-700 mb-1 flex items-end justify-center">
                 {/* Signature space */}
               </div>
-              <p className="text-xs font-bold text-slate-900">{settings.teacherName || 'Class Teacher'}</p>
-              <p className="text-[10px] text-slate-600 font-medium uppercase">{settings.teacherTitle || 'Class Teacher'}</p>
+              <p className="text-xs font-bold text-slate-900">Class Teacher</p>
+              <p className="text-[10px] text-slate-600 font-medium uppercase">Signature</p>
             </div>
 
             {/* Center: Vice Principal / First Assistant */}
@@ -398,9 +391,6 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
             {/* Right: Principal */}
             <div className="flex flex-col items-center relative">
-              <div className="absolute -top-10 right-4 w-16 h-16 rounded-full border border-dashed border-blue-800 opacity-30 flex items-center justify-center text-[8px] font-bold text-blue-900 uppercase pointer-events-none rotate-12">
-                OFFICIAL STAMP
-              </div>
               <div className="w-36 h-10 border-b border-slate-700 mb-1 flex items-end justify-center">
                 {/* Signature space */}
               </div>
